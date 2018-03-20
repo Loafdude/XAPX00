@@ -598,7 +598,7 @@ class XAPX00(object):
         isEnabled - true to enable, false to disable
         """
         resp = self.XAPCommand("AGC", channel, group, ("1" if isEnabled else "0"), unitCode=unitCode)
-        return bool(resp)
+        return bool(int(resp))
 
     def getAutoGainControl(self, channel, group="I", unitCode=0):
         """Requests the state of the automatic gain control (AGC) for the mic.
@@ -607,7 +607,7 @@ class XAPX00(object):
         channel - 1-8 for specific mic channel, or * for all mics
         """
         resp = self.XAPCommand("AGC", channel, group, unitCode=unitCode)
-        return bool(resp)
+        return bool(int(resp))
     
     def setAmbientLevel(self, channel, levelInDb, unitCode=0):
         """Sets the fixed ambient level of the specified XAP800.
@@ -623,9 +623,8 @@ class XAPX00(object):
                 levelInDb = 0
         elif levelInDb < -70:
                 levelInDb = -70
-        self.send("%s%s %s %s %s %s" %
-                  (XAP800_CMD, unitCode, "AMBLVL", channel, levelInDb, EOM))
-        self.readResponse()
+        resp = self.XAPCommand('AMBLVL', channel, levelInDb, unitCode=unitCode)
+        return float(resp)
 
     def getAmbientLevel(self, channel, unitCode=0):
         """Requests the fixed ambient level of the specified XAP800.
@@ -634,9 +633,8 @@ class XAPX00(object):
             channel: mic channel 1-9
             unitCode - the unit code of the target XAP800
         """
-        self.send("%s%s %s %s %s" %
-                  (XAP800_CMD, unitCode, "AMBLVL", channel, EOM))
-        return float(self.readResponse())
+        resp = self.XAPCommand('AMBLVL', channel, unitCode=unitCode)
+        return float(resp)
 
     def getSetBaudRate(self, baudRate, unitCode=0):
         """Set the baud rate for the RS232 port on the specified XAP800.
@@ -662,9 +660,8 @@ class XAPX00(object):
         channel - 1-8 for specific mic channel, or * for all mics
         isEnabled - 0=off, 1=om, 2=toggle
         """
-        self.send(XAP800_CMD + unitCode + " CHAIRO " + channel +
-                  ("1" if isEnabled else "0") + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('CHAIRO', channel, (1 if isEnabled else 0), unitCode=unitCode)
+        return int(resp)
 
     def getChairmanOverride(self, channel, isEnabled=0, unitCode=0):
         """Modifies the state of the chairman override a microphone(s).
@@ -673,9 +670,8 @@ class XAPX00(object):
         channel - 1-8 for specific mic channel, or * for all mics
         isEnabled - 0=off, 1=om, 2=toggle
         """
-        self.send(XAP800_CMD + unitCode + " CHAIRO " + channel +
-                  EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('CHAIRO', channel, unitCode=unitCode)
+        return int(resp)
 
     def setPreset(self, preset, state=1, unitCode=0):
         """Run the preset.
@@ -684,15 +680,13 @@ class XAPX00(object):
         state: 1: execute preset, set state=on
         state: 2: execute preset, set state=off
         """
-        self.send("%s%s %s %s %s" % (XAP800_CMD, unitCode,
-                                     "PRESET", state, EOM))
-        return int(self.readResponse())
+        resp = self.XAPCommand('PRESET', preset, state, unitCode=unitCode)
+        return int(resp)
 
-    def getPreset(self, preset, state=1, unitCode=0):
+    def getPreset(self, preset, unitCode=0):
         """Get the preset state"""
-        self.send("%s%s %s %s" % (XAP800_CMD, unitCode,
-                                  "PRESET", EOM))
-        return int(self.readResponse())
+        resp = self.XAPCommand('PRESET', preset, unitCode=unitCode)
+        return int(resp)
 
     def usePreset(self, preset, unitCode=0):
         """Cause the XAP800 to swap its settings for the given preset.
@@ -701,8 +695,8 @@ class XAPX00(object):
             unitCode - the unit code of the target XAP800
             preset - the preset to switch to (1-6)
         """
-        self.send(XAP800_CMD + unitCode + " PRESET " + preset + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('PRESET', preset, unitCode=unitCode)
+        return int(resp)
 
     def requestPreset(self, preset, unitCode=0):
         """Request the current preset in use for the specified XAP800.
@@ -710,8 +704,8 @@ class XAPX00(object):
         Args:
             unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " PRESET" + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('PRESET', preset, unitCode=unitCode)
+        return int(resp)
 
     def getEchoReturnLoss(self, channel, unitCode=0):
         """Request the status of the echo return loss.
@@ -719,9 +713,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         channel - the target channel
         """
-        self.send("{}{} {} {} {}".format(XAP800_CMD, unitCode,
-                                         "ERL", channel, EOM))
-        return int(self.readResponse())
+        resp = self.XAPCommand('ERL', channel, unitCode=unitCode)
+        return int(resp)
 
     def getEchoReturnLossEnhancement(self, channel, unitCode=0):
         """Request the status of the echo return loss enhancement.
@@ -729,19 +722,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         channel - the target channel
         """
-        self.send(XAP800_CMD + unitCode + " ERLE " + channel + EOM)
-        return int(self.readResponse())
-
-    def enableEqualizer(self, channel, isEnabled=True, unitCode=0):
-        """Enable or disable the equalizer for channel-unit.
-
-        unitCode - the unit code of the target XAP800
-        channel - the target channel (1-8, or * for all)
-        isEnabled - true to enable the channel, false to disable
-        """
-        self.send(XAP800_CMD + unitCode + " EQ " + channel + " " +
-                  ("1" if isEnabled else "0") + EOM)
-        return bool(self.readResponse())
+        resp = self.XAPCommand('ERLE', channel, unitCode=unitCode)
+        return int(resp)
 
     def setDefaultMeter(self, channel, isInput, unitCode=0):
         """Modify the default meter.
@@ -752,35 +734,16 @@ class XAPX00(object):
         isInput - true if the channel is an input, false
                   if the channel is an output.
         """
-        self.send(XAP800_CMD + unitCode + " DFLTM " + channel + " " +
-                  ("I" if isInput else "O") + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('DFLTM', channel, ("I" if isInput else "O"), unitCode=unitCode)
+        return int(resp)
 
     def getDefaultMeter(self, unitCode=0):
         """Request the default meter.
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " DFLTM " + EOM)
-        return int(self.readResponse())
-
-    def toggleEqualizer(self, channel, unitCode=0):
-        """Toggle the equalizer for the specified channel-unit.
-
-        unitCode - the unit code of the target XAP800
-        channel - the target channel (1-8, or * for all)
-        """
-        self.send(XAP800_CMD + unitCode + " EQ " + channel + " 2" + EOM)
-        return int(self.readResponse())
-
-    def requestEqualizer(self, channel, unitCode=0):
-        """Request the status of the equalizer for channel.
-
-        unitCode - the unit code of the target XAP800
-        channel - the target channel (1-8, or * for all)
-        """
-        self.send(XAP800_CMD + unitCode + " EQ " + channel + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('DFLTM', unitCode=unitCode)
+        return int(resp)
 
     def enableHardwareFlowControl(self, isEnabled=True, unitCode=0):
         """Enables or disables hardware flow control for the specified XAP800.
@@ -788,9 +751,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         isEnabled - true to enable the channel, false to disable
         """
-        self.send(XAP800_CMD + unitCode + " FLOW " +
-                  ("1" if isEnabled else "0") + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('FLOW', ("1" if isEnabled else "0"), unitCode=unitCode)
+        return int(resp)
 
     def requestHardwareFlowControl(self, unitCode=0):
         """Request the status of the hardware flow control for the specified XAP800.
@@ -798,8 +760,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         isEnabled - true to enable the channel, false to disable
         """
-        self.send(XAP800_CMD + unitCode + " FLOW " + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('FLOW', unitCode=unitCode)
+        return int(resp)
 
     def enableFirstMicPriorityMode(self, isEnabled=True, unitCode=0):
         """Enable or disable first microphone priority mode.
@@ -807,9 +769,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         isEnabled - true to enable the channel, false to disable
         """
-        self.send(XAP800_CMD + unitCode + " FMP " +
-                  ("1" if isEnabled else "0") + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('FMP', ("1" if isEnabled else "0"), unitCode=unitCode)
+        return int(resp)
 
     def requestFirstMicPriorityMode(self, unitCode=0):
         """Request the first microphone priority mode.
@@ -817,8 +778,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         isEnabled - true to enable the channel, false to disable
         """
-        self.send(XAP800_CMD + unitCode + " FMP " + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('FMP', unitCode=unitCode)
+        return int(resp)
 
     def setFrontPanelPasscode(self, passcode, unitCode=0):
         """Set the front panel passcode for the specified XAP800.
@@ -826,24 +787,24 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         passcode - the passcode to use for the front panel
         """
-        self.send(XAP800_CMD + unitCode + " FPP " + passcode + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('FPP', passcode, unitCode=unitCode)
+        return int(resp)
 
     def requestFrontPanelPasscode(self, unitCode=0):
         """Request the front panel passcode for the specified XAP800.
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " FPP " + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('FPP', unitCode=unitCode)
+        return int(resp)
 
     def requestGate(self, unitCode):
         """Request the gating status for the specified XAP800.
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " GATE " + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('GATE', unitCode=unitCode)
+        return int(resp)
 
     def setGatingMode(self, channel, mode, unitCode=0):
         """Set the gating mode on the specified channel for the specified XAP800.
@@ -857,9 +818,8 @@ class XAPX00(object):
                4 = OVERRIDE ON
                5 = OVERRIDE OFF
         """
-        self.send(XAP800_CMD + unitCode + " GMODE " + channel + " " +
-                  mode + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('GMODE', channel, mode, unitCode=unitCode)
+        return int(resp)
 
     def requestGatingMode(self, channel, unitCode=0):
         """Request the gating mode on the specified channel for the specified XAP800.
@@ -867,8 +827,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         channel - the target channel (1-8, or * for all)
         """
-        self.send(XAP800_CMD + unitCode + " GMODE " + channel + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('GMODE', channel, unitCode=unitCode)
+        return int(resp)
 
     def setGateRatio(self, gateRatioInDb, unitCode=0):
         """Set the gating ratio for the specified XAP800.
@@ -884,17 +844,16 @@ class XAPX00(object):
             gateRatioInDb = 0
         elif gateRatioInDb > 50:
             gateRatioInDb = 50
-        self.send(XAP800_CMD + unitCode + " GRATIO " + " " +
-                  gateRatioInDb + EOM)
-        return float(self.readResponse())
+        resp = self.XAPCommand('GRATIO', gateRatioInDb, unitCode=unitCode)
+        return float(resp)
 
     def requestGateRatio(self, unitCode=0):
         """Request the gating ratio for the specified XAP800.
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " GRATIO" + EOM)
-        return float(self.readResponse())
+        resp = self.XAPCommand('GRATIO', unitCode=unitCode)
+        return float(resp)
 
     def setHoldTime(self, holdTimeInMs, unitCode=0):
         """Set the hold time for the specified XAP800.
@@ -907,8 +866,8 @@ class XAPX00(object):
         """
         # Ensure compliance with level boundary conditions
         holdTimeInMs  = max(min(holdTimeInMs, 8000), 100)
-        self.send(XAP800_CMD + unitCode + " HOLD " + holdTimeInMs + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('HOLD', holdTimeInMs, unitCode=unitCode)
+        return int(resp)
 
     def setFrontPanelLock(self, isLocked=True, unitCode=0):
         """Lock or unlock the front panel of the specifid XAP800
@@ -916,17 +875,16 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         isLocked - true to lock, false to unlock
         """
-        self.send(XAP800_CMD + unitCode + " LFP " +
-                  ("1" if isLocked else "0") + EOM)
-        return bool(self.readResponse())
+        resp = self.XAPCommand('LFP', ("1" if isLocked else "0"), unitCode=unitCode)
+        return bool(int(resp))
 
     def toggleFrontPanelLock(self, unitCode=0):
         """Toggles the front panel lock of the specified XAP800
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " LFP 2" + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('LFP', 2, unitCode=unitCode)
+        return bool(int(resp))
 
     def requestFrontPanelLock(self, unitCode):
         """
@@ -934,8 +892,8 @@ class XAPX00(object):
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " LFP" + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('LFP', unitCode=unitCode)
+        return bool(int(resp))
 
     def setLastMicOnMode(self, mode, unitCode=0):
         """Set the last microphone on mode of the specified XAP800
@@ -946,16 +904,16 @@ class XAPX00(object):
                                  1 = Microphone #1
                                  2 = Last Microphone On
         """
-        self.send(XAP800_CMD + unitCode + " LMO " + mode + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('LMO', mode, unitCode=unitCode)
+        return int(resp)
 
     def requestLastMicOnMode(self, unitCode=0):
         """Request the last microphone on mode of the specified XAP800
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " LMO" + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('LMO', unitCode=unitCode)
+        return int(resp)
 
     def setMasterMode(self, mode, unitCode=0):
         """Set the master mode of the specified XAP800.
@@ -967,16 +925,16 @@ class XAPX00(object):
                                  3 = Slave
                                  4 = Master Linked
         """
-        self.send(XAP800_CMD + unitCode + " MASTER " + mode + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('MASTER', mode, unitCode=unitCode)
+        return int(resp)
 
     def requestMasterMode(self, unitCode=0):
         """Request the master mode of the specified XAP800.
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " MASTER " + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('MASTER', unitCode=unitCode)
+        return int(resp)
 
     def enableModemMode(self, unitCode, isEnabled=True):
         """Enable or disable the modem mode of the specified XAP800
@@ -984,51 +942,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         isEnabled - true to enable, false to disable
         """
-        self.send(XAP800_CMD + unitCode + " MDMODE " +
-                  ("1" if isEnabled else "0") + EOM)
-        return bool(self.readResponse())
-
-    def setMicEqualizerAdjustment(self, unitCode, channel, band, eqValue):
-        """Set the microphone equalizer adjustment of the target channel.
-
-        unitCode - the unit code of the target XAP800
-        channel - the target channel (1-8, or * for all)
-        band - H=High, M=Medium, L=Low
-        eqValue - the eq value (-12 to 12)
-        """
-        self.send(XAP800_CMD + unitCode + " MEQ " + channel + " " + band +
-                  " " + eqValue + EOM)
-        return float(self.readResponse())
-
-    def requestMicEqualizerAdjustment(self, channel, band, unitCode=0):
-        """Requests the microphone equalizer adjustment of the target channel.
-
-        unitCode - the unit code of the target XAP800
-        channel - the target channel (1-8, or * for all)
-        band - H=High, M=Medium, L=Low
-        """
-        self.send(XAP800_CMD + unitCode + " MEQ " + channel + " " + band + EOM)
-        return float(self.readResponse())
-
-    def enableMicHighPassFilter(self, channel, isEnabled=True, unitCode=0):
-        """Enable or disables the microphone high pass filter of the target channel.
-
-        unitCode - the unit code of the target XAP800
-        channel - the target channel (1-8, or * for all)
-        isEnabled - true to enable, false to disable
-        """
-        self.send(XAP800_CMD + unitCode + " MHP " + channel + " " +
-                  ("1" if isEnabled else "0") + EOM)
-        return bool(self.readResponse())
-
-    def requestMicHighPassFilter(self, channel, unitCode=0):
-        """Request the microphone high pass filter of the target channel.
-
-        unitCode - the unit code of the target XAP800
-        channel - the target channel (1-8, or * for all)
-        """
-        self.send(XAP800_CMD + unitCode + " MHP " + channel + " " + EOM)
-        return bool(self.readResponse())
+        resp = self.XAPCommand('MDMODE', (1 if isEnabled else 0), unitCode=unitCode)
+        return bool(int(resp))
 
     def setModemInitString(self, initString, unitCode=0):
         """Set the modem initialization string of the specified XAP800.
@@ -1036,8 +951,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         initString - the string to use when initializing the modem
         """
-        self.send(XAP800_CMD + unitCode + " MINIT " + initString + EOM)
-        return self.readResponse()
+        resp = self.XAPCommand('MINIT', initString, unitCode=unitCode)
+        return resp
 
     def setMicInputGain(self, unitCode, channel, gain):
         """Set the microphone input gain for the target channel.
@@ -1049,9 +964,8 @@ class XAPX00(object):
                                  2 = 25dB
                                  3 = 0dB (line level)
         """
-        self.send(XAP800_CMD + unitCode + " MLINE " + channel +
-                  " " + gain + EOM)
-        return float(self.readResponse())
+        resp = self.XAPCommand('MLINE', channel, gain, unitCode=unitCode)
+        return float(resp)
 
     def requestMicInputGain(self, channel, unitCode=0):
         """Request the microphone input gain for the target channel.
@@ -1059,8 +973,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         channel - the target channel (1-8, or * for all)
         """
-        self.send(XAP800_CMD + unitCode + " MLINE " + channel + EOM)
-        return float(self.readResponse())
+        resp = self.XAPCommand('MLINE', channel, unitCode=unitCode)
+        return float(resp)
 
     def setMaxActiveMics(self, maxMics, unitCode=0):
         """Set the maxmimum number of active microphones.
@@ -1074,16 +988,16 @@ class XAPX00(object):
             maxMics = 0
         elif maxMics > 8:
             maxMics = 8
-        self.send(XAP800_CMD + unitCode + " MMAX " + maxMics + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('MMAX', maxMics, unitCode=unitCode)
+        return int(resp)
 
     def requestMaxActiveMics(self, unitCode=0):
         """Request the maxmimum number of active microphones
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " MMAX" + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('MMAX', unitCode=unitCode)
+        return int(resp)
 
     def setModemModePassword(self, modemPassword, unitCode=0):
         """Set the modem password for the specified XAP800.
@@ -1091,30 +1005,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         modemPassword - the modem password
         """
-        self.send(XAP800_CMD + unitCode + " MPASS " + modemPassword + EOM)
-        return self.readResponse()
-
-    def setMicEchoCancellerReference(self, channel, ecRef, unitCode=0):
-        """Set the microphone echo canceller reference channel
-
-        unitCode - the unit code of the target XAP800
-        channel - the target channel (1-8, or * for all)
-        ecRef - the reference channel
-                1 = EC Ref 1
-                2 = EC Ref 2
-        """
-        self.send(XAP800_CMD + unitCode + " MREF " + channel +
-                  " " + ecRef + EOM)
-        return int(self.readResponse())
-
-    def requestMicEchoCancellerReference(self, channel, unitCode=0):
-        """Request the microphone echo canceller reference channel.
-
-        unitCode - the unit code of the target XAP800
-        channel - the target channel (1-8, or * for all)
-        """
-        self.send(XAP800_CMD + unitCode + " MREF " + channel + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('MPASS', modemPassword, unitCode=unitCode)
+        return resp
 
     def setNonlinearProcessingMode(self, channel, nlpMode, unitCode=0):
         """Set the nonlinear processing (NLP) mode of the target channel.
@@ -1127,9 +1019,8 @@ class XAPX00(object):
             2 = Medium
             3 = Aggressive
         """
-        self.send(XAP800_CMD + unitCode + " NLP " + channel + " " +
-                  nlpMode + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('NLP', channel, nlpMode, unitCode=unitCode)
+        return int(resp)
 
     def requestNonlinearProcessingMode(self, channel, unitCode=0):
         """Request the nonlinear processing (NLP) mode of the channel-unit.
@@ -1137,8 +1028,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         channel - the target channel (1-8, or * for all)
         """
-        self.send(XAP800_CMD + unitCode + " NLP " + channel + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('NLP', channel, unitCode=unitCode)
+        return int(resp)
 
     def enableNumberOpenMicsAttenuation(self, channel, isEnabled=True,
                                         unitCode=0):
@@ -1148,9 +1039,8 @@ class XAPX00(object):
         channel - the target channel (1-8, or * for all)
         isEnabled - true to enable NOM, false to disable
         """
-        self.send(XAP800_CMD + unitCode + " NOM " + channel + " " +
-                  ("1" if isEnabled else "0") + EOM)
-        return bool(self.readResponse())
+        resp = self.XAPCommand('NOM', channel, (1 if isEnabled else 0), unitCode=unitCode)
+        return float(resp)
 
     def requestNumberOpenMicsAttenuation(self, channel, unitCode=0):
         """Request the NOM attenuation for the target channel.
@@ -1158,8 +1048,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         channel - the target channel (1-8, or * for all)
         """
-        self.send(XAP800_CMD + unitCode + " NOM " + channel + EOM)
-        return float(self.readResponse())
+        resp = self.XAPCommand('NOM', channel, unitCode=unitCode)
+        return float(resp)
 
     def setOffAttenuation(self, attenuation, unitCode=0):
         """Set the off attenuation for the specified XAP800.
@@ -1174,102 +1064,35 @@ class XAPX00(object):
             attenuation = 0
         elif attenuation > 50:
             attenuation = 50
-        self.send(XAP800_CMD + unitCode + " OFFA " + attenuation + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('OFFA', attenuation, unitCode=unitCode)
+        return int(resp)
 
     def requestOffAttenuation(self, unitCode=0):
         """Request the off attenuation for the specified XAP800.
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " OFFA" + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('OFFA', unitCode=unitCode)
+        return int(resp)
 
-    def enablePaAdaptiveMode(self, isEnabled=True, unitCode=0):
+    def enablePaAdaptiveMode(self, channel, isEnabled=True, unitCode=0):
         """Enable or disable PA adaptive mode.
 
         unitCode - the unit code of the target XAP800
+        channel - the target channel (1-8, or * for all)
         isEnabled - true to enable, false to disable
         """
-        self.send(XAP800_CMD + unitCode + " PAA " +
-                  ("1" if isEnabled else "0") + EOM)
-        return bool(self.readResponse())
+        resp = self.XAPCommand('PAA', channel, (1 if isEnabled else 0), unitCode=unitCode)
+        return bool(int(resp))
 
-    def requestPaAdaptiveMode(self, unitCode=0):
+    def requestPaAdaptiveMode(self, channel, unitCode=0):
         """Request the PA adaptive mode.
 
         unitCode - the unit code of the target XAP800
+        channel - the target channel (1-8, or * for all)
         """
-        self.send(XAP800_CMD + unitCode + " PAA" + EOM)
-        return self.readResponse()
-
-    def setControlPinCommand(self, pinLocation, command, unitCode=0):
-        """Specifies the command to be executed when the GPIO pin/control occurs.
-
-        unitCode - the unit code of the target XAP800
-        pinLocation - the pin location (see pg 67 of the
-                  XAP800 manual for specifications)
-        command - the command to execute (any of LFP,
-                                    PRESET, MUTE, GAIN, AGC, EQ, GMODE,
-                                          or CHAIRO)
-        """
-        self.send(XAP800_CMD + unitCode + " PCMD " + pinLocation +
-                  " " + command + EOM)
-        return self.readResponse()
-
-    def clearControlPinCommand(self, pinLocation, unitCode=0):
-        """Clear any commands set for the the GPIO pin/control specified.
-
-        unitCode - the unit code of the target XAP800
-        pinLocation - the pin location (see pg 67 of the
-                  XAP800 manual for specifications)
-        """
-        self.setControlPinCommand(unitCode, pinLocation, "CLEAR")
-        return int(self.readResponse())
-
-    def requestControlPinCommand(self, pinLocation, unitCode=0):
-        """Request the command to be executed when the GPIO pin/control occurs.
-
-        unitCode - the unit code of the target XAP800
-        pinLocation - the pin location (see pg 67 of the
-                  XAP800 manual for specifications)
-        """
-        self.send(XAP800_CMD + unitCode + " PCMD " + pinLocation + EOM)
-        return self.readResponse()
-
-    def setStatusPinCommand(self, pinLocation, command, unitCode=0):
-        """Specifie the command to be executed when the GPIO pin/status occurs.
-
-        unitCode - the unit code of the target XAP800
-        pinLocation - the pin location (see pg 67 of the
-                  XAP800 manual for specifications)
-        command - the command to execute (any of LFP,
-                                    PRESET, MUTE, GAIN, AGC, EQ, GMODE,
-                                          or CHAIRO)
-        """
-        self.send(XAP800_CMD + unitCode + " PEVNT " + pinLocation + " " +
-                  command + EOM)
-        return self.readResponse()
-
-    def clearStatusPinCommand(self, pinLocation, unitCode=0):
-        """Clear any commands set for the GPIO pin/status specified.
-
-        unitCode - the unit code of the target XAP800
-        pinLocation - the pin location (see pg 67 of the
-                  XAP800 manual for specifications)
-        """
-        self.setStatusPinCommand(unitCode, pinLocation, "CLEAR")
-        return int(self.readResponse())
-
-    def requestStatusPinCommand(self, pinLocation, unitCode=0):
-        """Request the command to be executed when the GPIO pin/status occurs.
-
-        unitCode - the unit code of the target XAP800
-        pinLocation - the pin location (see pg 67 of the
-                  XAP800 manual for specifications)
-        """
-        self.send(XAP800_CMD + unitCode + " PEVNT " + pinLocation + EOM)
-        return self.readResponse()
+        resp = self.XAPCommand('PAA', channel, unitCode=unitCode)
+        return bool(int(resp))
 
     def enablePhantomPower(self, channel, isEnabled=True, unitCode=0):
         """Enable or disable phantom power for the target channel.
@@ -1278,9 +1101,8 @@ class XAPX00(object):
         channel - the target channel (1-8, or * for all)
         isEnabled - true to enable, false to disable
         """
-        self.send(XAP800_CMD + unitCode + " PP " + channel +
-                  ("1" if isEnabled else "0") + EOM)
-        return bool(self.readResponse())
+        resp = self.XAPCommand('PP', channel, (1 if isEnabled else 0), unitCode=unitCode)
+        return bool(int(resp))
 
     def requestPhantomPower(self, channel, unitCode=0):
         """Request the enable status of phantom power.
@@ -1288,8 +1110,8 @@ class XAPX00(object):
         unitCode - the unit code of the target XAP800
         channel - the target channel (1-8, or * for all)
         """
-        self.send(XAP800_CMD + unitCode + " PP " + channel + EOM)
-        return bool(self.readResponse())
+        resp = self.XAPCommand('PP', channel, unitCode=unitCode)
+        return bool(int(resp))
 
     def setMicEchoCancellerReferenceOutput(self, ecRef, output, unitCode=0):
         """Set the microphone echo canceller reference output
@@ -1303,9 +1125,8 @@ class XAPX00(object):
         (1-8, A-D, E to select G-Link Ref Bus, or F
               to select NONE)
         """
-        self.send(XAP800_CMD + unitCode + " REFSEL " + ecRef + " " +
-                  output + EOM)
-        return self.readResponse()
+        resp = self.XAPCommand('REFSEL', ecRef, output, unitCode=unitCode)
+        return resp
 
     def requestMicEchoCancellerReferenceOutput(self, ecRef, unitCode=0):
         """Request the microphone echo canceller reference output.
@@ -1316,8 +1137,8 @@ class XAPX00(object):
                                   2 = EC Ref 2
                                   3 = G-Link EC Ref bus
         """
-        self.send(XAP800_CMD + unitCode + " REFSEL " + ecRef + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('REFSEL', ecRef, unitCode=unitCode)
+        return int(resp)
 
     def setScreenTimeout(self, timeInMinutes, unitCode=0):
         """Sets the screen timeout in minutes.
@@ -1332,24 +1153,24 @@ class XAPX00(object):
             timeInMinutes = 0
         elif timeInMinutes > 15:
             timeInMinutes = 15
-        self.send(XAP800_CMD + unitCode + " TOUT " + timeInMinutes + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('TOUT', timeInMinutes, unitCode=unitCode)
+        return int(resp)
 
     def requestScreenTimeout(self, unitCode=0):
         """Request the screen timeout in minutes.
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " TOUT" + EOM)
-        return int(self.readResponse())
+        resp = self.XAPCommand('TOUT', unitCode=unitCode)
+        return int(resp)
 
     def requestVersion(self, unitCode=0):
         """Request the firmware version of the target XAP800.
 
         unitCode - the unit code of the target XAP800
         """
-        self.send(XAP800_CMD + unitCode + " VER" + EOM)
-        return self.readResponse()
+        resp = self.XAPCommand('VER', unitCode=unitCode)
+        return resp
 
     errorDefs = {"ERROR 1": "Out of Memory",
                  "ERROR 2": "Could not extract a command from\
