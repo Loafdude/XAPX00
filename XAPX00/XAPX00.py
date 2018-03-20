@@ -716,15 +716,6 @@ class XAPX00(object):
         resp = self.XAPCommand('ERL', channel, unitCode=unitCode)
         return int(resp)
 
-    def getEchoReturnLossEnhancement(self, channel, unitCode=0):
-        """Request the status of the echo return loss enhancement.
-
-        unitCode - the unit code of the target XAP800
-        channel - the target channel
-        """
-        resp = self.XAPCommand('ERLE', channel, unitCode=unitCode)
-        return int(resp)
-
     def setDefaultMeter(self, channel, isInput, unitCode=0):
         """Modify the default meter.
 
