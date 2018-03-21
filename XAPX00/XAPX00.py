@@ -1223,6 +1223,21 @@ class XAPX00(object):
         """
         resp = self.XAPCommand('DID', id, unitCode=unitCode)
         return int(resp)
+      
+    def getSafetyMute(self, unitCode=0):
+        """Request the safety mute status of the unit
+        unitCode - the unit code of the target XAP800
+        """
+        resp = self.XAPCommand('SFTYMUTE', unitCode=unitCode)
+        return bool(int(resp))
+
+    def setSafetyMute(self, isEnabled, unitCode=0):
+        """Set the safety mute on the unit
+        isEnabled - True turns safety mute on
+        unitCode - the unit code of the target XAP800
+        """
+        resp = self.XAPCommand('SFTYMUTE', isEnabled, unitCode=unitCode)
+        return bool(int(resp))
         
     def getAutoGainControl(self, channel, group, unitCode=0):
         """Request the settings of the AGC on an input channel
