@@ -203,19 +203,25 @@ class XAPX00(object):
             return len(data)
 
     def XAPCommand(self, command, *args, **kwargs):
-        """Call command and return value"""
-
         unitCode=kwargs.get('unitCode',0)
-
         rtnCount = kwargs.get('rtnCount',1)
         args = [str(x) for x in args]
         xapstr = "%s%s %s %s %s" % ( self.XAPCMD, unitCode, command, " ".join(args),  EOM)
         _LOGGER.debug("Sending %s" % xapstr)
+        starttime = time.time()
         while 1:
-            if self._waiting_response == 1:
+            if self._waiting_response==1:
+                if time.time() - starttime > self._maxrespdelay:
+                    break
+                _LOGGER.debug("Send going to sleep\n")
                 time.sleep(self._sleeptime)
             else:
-                break           
+                break
+        currtime = time.time()
+        if currtime - self._lastcall > self._maxtime:
+            self.reset()
+        self._lastcall = currtime
+        _LOGGER.debug("Sending: %s", xapstr)
         self.serial.reset_input_buffer()
         self.serial.write(xapstr.encode())
         self._waiting_response = 1
