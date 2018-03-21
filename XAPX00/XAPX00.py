@@ -1030,6 +1030,13 @@ class XAPX00(object):
         """
         resp = self.XAPCommand('MPASS', modemPassword, unitCode=unitCode)
         return resp
+      
+    def getModemModePassword(self, unitCode=0):
+        """Get the modem password for the specified XAP800.
+        unitCode - the unit code of the target XAP800
+        """
+        resp = self.XAPCommand('MPASS', unitCode=unitCode)
+        return resp
 
     def setNonlinearProcessingMode(self, channel, nlpMode, unitCode=0):
         """Set the nonlinear processing (NLP) mode of the target channel.
