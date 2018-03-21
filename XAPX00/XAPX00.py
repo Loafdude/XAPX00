@@ -426,10 +426,20 @@ class XAPX00(object):
 
     def getLabel(self, channel, group, unitCode=0):
         """Retrieve the text label assigned to an inpout or ouput"""
-        self.send("%s%s %s %s %s %s" % (XAP800_CMD, unitCode, "LEVEL",
-                                        channel, group, EOM))
-        return self.readResponse()
+        resp = self.XAPCommand("LABEL", channel, group, unitCode=unitCode)
+        return resp
 
+    def setLabel(self, channel, group, label, inout=False, unitCode=0):
+        """Retrieve the text label assigned to an inpout or ouput
+        inout - String, either In or Out. Used with expansion bus labels
+        label - String, up to 20 characters. Use CLEAR to clear the field
+        """
+        if inout:
+          resp = self.XAPCommand("LABEL", channel, group, inout, label, unitCode=unitCode)
+        else:
+          resp = self.XAPCommand("LABEL", channel, group, label, unitCode=unitCode)
+        return resp
+            
     @stereo
     def setMatrixRouting(self, inChannel, outChannel, state=1, inGroup="I",
                          outGroup="O", unitCode=0):
