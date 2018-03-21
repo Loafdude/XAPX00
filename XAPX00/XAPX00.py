@@ -943,13 +943,21 @@ class XAPX00(object):
         resp = self.XAPCommand('MASTER', unitCode=unitCode)
         return int(resp)
 
-    def enableModemMode(self, unitCode, isEnabled=True):
+    def setModemMode(self, isEnabled, unitCode=0):
         """Enable or disable the modem mode of the specified XAP800
 
         unitCode - the unit code of the target XAP800
         isEnabled - true to enable, false to disable
         """
         resp = self.XAPCommand('MDMODE', (1 if isEnabled else 0), unitCode=unitCode)
+        return bool(int(resp))
+      
+    def getModemMode(self, unitCode=0):
+        """Enable or disable the modem mode of the specified XAP800
+
+        unitCode - the unit code of the target XAP800
+        """
+        resp = self.XAPCommand('MDMODE', unitCode=unitCode)
         return bool(int(resp))
 
     def setModemInitString(self, initString, unitCode=0):
