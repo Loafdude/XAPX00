@@ -968,6 +968,14 @@ class XAPX00(object):
         """
         resp = self.XAPCommand('MINIT', initString, unitCode=unitCode)
         return resp
+      
+    def getModemInitString(self, unitCode=0):
+        """Get the modem initialization string of the specified XAP800.
+
+        unitCode - the unit code of the target XAP800
+        """
+        resp = self.XAPCommand('MINIT', unitCode=unitCode)
+        return resp
 
     def setMicInputGain(self, unitCode, channel, gain):
         """Set the microphone input gain for the target channel.
