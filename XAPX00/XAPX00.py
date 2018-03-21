@@ -1163,6 +1163,50 @@ class XAPX00(object):
         resp = self.XAPCommand('VER', unitCode=unitCode)
         return resp
 
+    def requestDSPVersion(self, unitCode=0):
+        """This command reports the version of the DSP code in
+        the unit. the version is a date and time stamp.
+        unitCode - the unit code of the target XAP800
+        """
+        resp = self.XAPCommand('DSPVER', unitCode=unitCode)
+        return resp
+
+    def requestDeviceID(self, unitCode=0):
+        """Request the Device ID of the unit
+        unitCode - the unit code of the target XAP800
+        """
+        resp = self.XAPCommand('DID', unitCode=unitCode)
+        return int(resp)
+
+    def setDeviceID(self, id, unitCode=0):
+        """Set the device ID of the unit
+        unitCode - the unit code of the target XAP800
+        """
+        resp = self.XAPCommand('DID', id, unitCode=unitCode)
+        return int(resp)
+        
+    def requestAutoGainControl(self, channel, group, unitCode=0):
+        """Request the settings of the AGC on an input channel
+        unitCode - the unit code of the target XAP800
+        """
+        resp = self.XAPCommand('AGCSET', channel, group, unitCode=unitCode, rtnCount=4)
+        return {"threshold": float(resp[0]),
+                "target": float(resp[1]),
+                "attack": float(resp[2]),
+                "gain": float(resp[3])
+                }
+        
+    def setAutoGainControl(self, channel, group, threshold, target, attack, gain, unitCode=0):
+        """Set the settings of the AGC on an input channel
+        unitCode - the unit code of the target XAP800
+        """
+        resp = self.XAPCommand('AGCSET', 1, "M", unitCode=unitCode, rtnCount=4)
+        return {"threshold": float(resp[0]),
+                "target": float(resp[1]),
+                "attack": float(resp[2]),
+                "gain": float(resp[3])
+                }
+      
     errorDefs = {"ERROR 1": "Out of Memory",
                  "ERROR 2": "Could not extract a command from\
                  the string received",
