@@ -1188,23 +1188,38 @@ class XAPX00(object):
     def requestAutoGainControl(self, channel, group, unitCode=0):
         """Request the settings of the AGC on an input channel
         unitCode - the unit code of the target XAP800
+        channel   - 1-12
+        group     - I M or L
+        threshold - -50 to 0dB
+        target    - -30 to 20dB
+        attack    - 0.10-10.00s in .1 intervals
+        gain      - 0.00-18.00dB
         """
         resp = self.XAPCommand('AGCSET', channel, group, unitCode=unitCode, rtnCount=4)
-        return {"threshold": float(resp[0]),
-                "target": float(resp[1]),
+        return {"threshold": db2linear(resp[0]) if self.convertDb else float(resp[0]),
+                "target": db2linear(resp[1]) if self.convertDb else float(resp[1]),
                 "attack": float(resp[2]),
-                "gain": float(resp[3])
+                "gain": db2linear(resp[3]) if self.convertDb else float(resp[3]),
                 }
         
     def setAutoGainControl(self, channel, group, threshold, target, attack, gain, unitCode=0):
         """Set the settings of the AGC on an input channel
         unitCode - the unit code of the target XAP800
+        channel   - 1-12
+        group     - I M or L
+        threshold - -50 to 0dB
+        target    - -30 to 20dB
+        attack    - 0.10-10.00s in .1 intervals
+        gain      - 0.00-18.00dB
         """
+        threshold = linear2db(threshold) if self.convertDb else threshold
+        target = linear2db(target) if self.convertDb else target
+        gain = linear2db(gain) if self.convertDb else gain
         resp = self.XAPCommand('AGCSET', 1, "M", unitCode=unitCode, rtnCount=4)
-        return {"threshold": float(resp[0]),
-                "target": float(resp[1]),
+        return {"threshold": db2linear(resp[0]) if self.convertDb else float(resp[0]),
+                "target": db2linear(resp[1]) if self.convertDb else float(resp[1]),
                 "attack": float(resp[2]),
-                "gain": float(resp[3])
+                "gain": db2linear(resp[3]) if self.convertDb else float(resp[3]),
                 }
       
     errorDefs = {"ERROR 1": "Out of Memory",
